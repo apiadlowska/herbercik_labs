@@ -14,12 +14,13 @@ class TestTriangleFunctions(unittest.TestCase):
 
     def test_triangle_area(self):
         self.assertAlmostEqual(_triangle_area(3, 4, 5), 6.0)
-        self.assertAlmostEqual(_triangle_area(5, 5, 5), 10.825317547305486)
+        self.assertAlmostEqual(_triangle_area(5, 6, 5), 12.0)
 
     def test_triangle_type(self):
-        self.assertEqual(_triangle_type(3, 3, 3), "równoboczny")
-        self.assertEqual(_triangle_type(5, 5, 3), "równoramienny")
-        self.assertEqual(_triangle_type(3, 4, 5), "różnoboczny")
+        self.assertEqual(_triangle_type(3, 4, 5), "prostokątny")  # 3^2+4^2=5^2
+        self.assertEqual(_triangle_type(2, 2, 3), "rozwartokątny")   # 2^2+2^2 < 3^2
+        self.assertEqual(_triangle_type(2, 3, 4), "rozwartokątny") # 2^2+3^2 < 4^2
+        self.assertEqual(_triangle_type(5, 5, 5), "ostrokątny")   # All sides equal, always acute
 
 if __name__ == "__main__":
     unittest.main()

@@ -23,15 +23,22 @@ def _triangle_area(a, b, c):
 
 def _triangle_type(a, b, c):
 	"""
-	Określa typ trójkąta na podstawie długości boków.
-	Zwraca: 'równoboczny', 'równoramienny' lub 'różnoboczny'.
+	Określa typ trójkąta na podstawie kątów:
+	- 'ostrokątny' jeśli a^2 + b^2 > c^2
+	- 'prostokątny' jeśli a^2 + b^2 == c^2
+	- 'rozwartokątny' jeśli a^2 + b^2 < c^2
+	gdzie c to najdłuższy bok.
 	"""
-	if a == b == c:
-		return "równoboczny"
-	elif a == b or b == c or a == c:
-		return "równoramienny"
+	sides = sorted([a, b, c])
+	x, y, z = sides  # x <= y <= z
+	left = x**2 + y**2
+	right = z**2
+	if abs(left - right) == 0:
+		return "prostokątny"
+	elif left > right:
+		return "ostrokątny"
 	else:
-		return "różnoboczny"
+		return "rozwartokątny"
 
 def main():
 	"""

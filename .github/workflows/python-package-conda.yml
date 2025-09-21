@@ -1,5 +1,4 @@
 import math
-
 # Funkcja do obliczeń dla figur płaskich
 def menu_plaskie():
     print("""

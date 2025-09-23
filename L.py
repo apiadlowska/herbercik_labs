@@ -1,0 +1,315 @@
+import math
+
+# Lista do przechowywania historii obliczeń
+historia = []
+
+def dodaj_do_historii(tekst):
+    """Dodaje tekst do historii obliczeń."""
+    historia.append(tekst)
+
+def wyswietl_historie():
+    """Wyświetla historię obliczeń."""
+    print("\n=== HISTORIA OBLICZEŃ ===")
+    if not historia:
+        print("Brak historii.")
+    else:
+        for i, wpis in enumerate(historia, 1):
+            print(f"{i}. {wpis}")
+    input("Naciśnij Enter, aby wrócić do menu...")
+
+def wyczysc_historie():
+    """Czyści historię obliczeń."""
+    historia.clear()
+    print("Historia została wyczyszczona.")
+    input("Naciśnij Enter, aby wrócić do menu...")
+
+def wczytaj_liczbe(prompt):
+    """Wczytuje liczbę typu float od użytkownika i sprawdza, czy jest dodatnia."""
+    while True:
+        try:
+            liczba = float(input(prompt))
+            if liczba <= 0:
+                print("Podaj liczbę większą od zera.")
+                continue
+            return liczba
+        except ValueError:
+            print("Błąd: podaj prawidłową liczbę.")
+
+def opis_figury(fig):
+    """Zwraca opis figury płaskiej."""
+    opisy = {
+        "a": "Koło: figura płaska, wszystkie punkty są w tej samej odległości od środka.",
+        "b": "Kwadrat: czworokąt o równych bokach i kątach prostych.",
+        "c": "Prostokąt: czworokąt o kątach prostych.",
+        "d": "Trójkąt (Heron): dowolny trójkąt, pole liczone wzorem Herona.",
+        "e": "Trójkąt równoboczny: wszystkie boki równe.",
+        "f": "Trapez: czworokąt z jedną parą boków równoległych.",
+        "g": "Równoległobok: czworokąt o przeciwległych bokach równoległych.",
+        "h": "Romb: czworokąt o równych bokach."
+    }
+    return opisy.get(fig, "")
+
+def opis_bryly(bryla):
+    """Zwraca opis bryły."""
+    opisy = {
+        "a": "Sześcian: bryła o 6 równych kwadratowych ścianach.",
+        "b": "Prostopadłościan: bryła o 6 prostokątnych ścianach.",
+        "c": "Walec: bryła o dwóch równoległych podstawach kołowych.",
+        "d": "Kula: zbiór punktów w równej odległości od środka.",
+        "e": "Stożek: bryła z podstawą kołową i wierzchołkiem.",
+        "f": "Graniastosłup: bryła o dwóch równoległych podstawach.",
+        "g": "Ostrosłup: bryła z podstawą i wierzchołkiem."
+    }
+    return opisy.get(bryla, "")
+
+def menu_plaskie():
+    """Menu figur płaskich."""
+    print("""
+=== FIGURY PŁASKIE ===
+a - Koło
+b - Kwadrat
+c - Prostokąt
+d - Trójkąt (Heron)
+e - Trójkąt równoboczny
+f - Trapez
+g - Równoległobok
+h - Romb
+""")
+    fig = input("Wybierz figurę: ").lower()
+    print(opis_figury(fig))
+    try:
+        if fig == "a":
+            r = wczytaj_liczbe("Promień r = ")
+            pole = round(math.pi * r**2, 2)
+            obw = round(2 * math.pi * r, 2)
+            print(f"Pole koła = {pole}")
+            print(f"Obwód koła = {obw}")
+            dodaj_do_historii(f"Koło: r={r}, pole={pole}, obwód={obw}")
+
+        elif fig == "b":
+            a = wczytaj_liczbe("Bok a = ")
+            pole = round(a**2, 2)
+            obw = round(4 * a, 2)
+            przek = round(a * math.sqrt(2), 2)
+            print(f"Pole kwadratu = {pole}")
+            print(f"Obwód kwadratu = {obw}")
+            print(f"Przekątna kwadratu = {przek}")
+            dodaj_do_historii(f"Kwadrat: a={a}, pole={pole}, obwód={obw}, przekątna={przek}")
+
+        elif fig == "c":
+            a = wczytaj_liczbe("Bok a = ")
+            b = wczytaj_liczbe("Bok b = ")
+            pole = round(a * b, 2)
+            obw = round(2 * (a + b), 2)
+            print(f"Pole prostokąta = {pole}")
+            print(f"Obwód prostokąta = {obw}")
+            dodaj_do_historii(f"Prostokąt: a={a}, b={b}, pole={pole}, obwód={obw}")
+
+        elif fig == "d":
+            a = wczytaj_liczbe("Bok a = ")
+            b = wczytaj_liczbe("Bok b = ")
+            c = wczytaj_liczbe("Bok c = ")
+            obw = a + b + c
+            if a + b > c and a + c > b and b + c > a:
+                s = obw / 2
+                pole = math.sqrt(s * (s - a) * (s - b) * (s - c))
+                print(f"Obwód trójkąta = {round(obw, 2)}")
+                print(f"Pole trójkąta = {round(pole, 2)}")
+                dodaj_do_historii(f"Trójkąt (Heron): a={a}, b={b}, c={c}, pole={round(pole,2)}, obwód={round(obw,2)}")
+            else:
+                print("Z tych boków nie da się zbudować trójkąta.")
+
+        elif fig == "e":
+            a = wczytaj_liczbe("Bok a = ")
+            pole = (a**2 * math.sqrt(3)) / 4
+            obw = 3 * a
+            h = (a * math.sqrt(3)) / 2
+            print(f"Pole trójkąta równobocznego = {round(pole, 2)}")
+            print(f"Obwód trójkąta równobocznego = {round(obw, 2)}")
+            print(f"Wysokość trójkąta równobocznego = {round(h, 2)}")
+            dodaj_do_historii(f"Trójkąt równoboczny: a={a}, pole={round(pole,2)}, obwód={round(obw,2)}, h={round(h,2)}")
+
+        elif fig == "f":
+            a = wczytaj_liczbe("Podstawa a = ")
+            b = wczytaj_liczbe("Podstawa b = ")
+            h = wczytaj_liczbe("Wysokość h = ")
+            pole = ((a + b) * h) / 2
+            c = wczytaj_liczbe("Bok c = ")
+            d = wczytaj_liczbe("Bok d = ")
+            obw = a + b + c + d
+            print(f"Pole trapezu = {round(pole, 2)}")
+            print(f"Obwód trapezu = {round(obw, 2)}")
+            dodaj_do_historii(f"Trapez: a={a}, b={b}, c={c}, d={d}, h={h}, pole={round(pole,2)}, obwód={round(obw,2)}")
+
+        elif fig == "g":
+            a = wczytaj_liczbe("Bok a = ")
+            b = wczytaj_liczbe("Bok b = ")
+            h = wczytaj_liczbe("Wysokość h do boku a = ")
+            pole = a * h
+            obw = 2 * (a + b)
+            print(f"Pole równoległoboku = {round(pole, 2)}")
+            print(f"Obwód równoległoboku = {round(obw, 2)}")
+            dodaj_do_historii(f"Równoległobok: a={a}, b={b}, h={h}, pole={round(pole,2)}, obwód={round(obw,2)}")
+
+        elif fig == "h":
+            print("Jak chcesz policzyć pole rombu?")
+            print("1 - P = a * h (bok i wysokość)")
+            print("2 - P = (e * f) / 2 (przekątne)")
+            wybor = input("1 / 2 ? ")
+            if wybor == "1":
+                a = wczytaj_liczbe("Bok a = ")
+                h = wczytaj_liczbe("Wysokość h = ")
+                pole = a * h
+                obw = 4 * a
+                print(f"Pole rombu = {round(pole, 2)}")
+                print(f"Obwód rombu = {round(obw, 2)}")
+                dodaj_do_historii(f"Romb (a,h): a={a}, h={h}, pole={round(pole,2)}, obwód={round(obw,2)}")
+            elif wybor == "2":
+                a = wczytaj_liczbe("Bok a = ")
+                e = wczytaj_liczbe("Przekątna e = ")
+                f = wczytaj_liczbe("Przekątna f = ")
+                pole = (e * f) / 2
+                obw = 4 * a
+                print(f"Pole rombu = {round(pole, 2)}")
+                print(f"Obwód rombu = {round(obw, 2)}")
+                dodaj_do_historii(f"Romb (przekątne): a={a}, e={e}, f={f}, pole={round(pole,2)}, obwód={round(obw,2)}")
+            else:
+                print("Nie ma takiej opcji.")
+        else:
+            print("Nie ma takiej figury.")
+    except Exception as e:
+        print(f"Błąd: {e}")
+    input("Naciśnij Enter, aby wrócić do menu...")
+
+def menu_bryly():
+    """Menu brył."""
+    print("""
+=== BRYŁY ===
+a - Sześcian
+b - Prostopadłościan
+c - Walec
+d - Kula
+e - Stożek
+f - Graniastosłup
+g - Ostrosłup
+""")
+    bryla = input("Wybierz bryłę: ").lower()
+    print(opis_bryly(bryla))
+    try:
+        if bryla == "a":
+            a = wczytaj_liczbe("Bok a = ")
+            pole = round(6 * a**2, 2)
+            obj = round(a**3, 2)
+            print(f"Pole powierzchni sześcianu = {pole}")
+            print(f"Objętość sześcianu = {obj}")
+            dodaj_do_historii(f"Sześcian: a={a}, pole={pole}, objętość={obj}")
+
+        elif bryla == "b":
+            a = wczytaj_liczbe("Bok a = ")
+            b = wczytaj_liczbe("Bok b = ")
+            c = wczytaj_liczbe("Bok c = ")
+            pole = round(2 * (a*b + a*c + b*c), 2)
+            obj = round(a*b*c, 2)
+            print(f"Pole powierzchni prostopadłościanu = {pole}")
+            print(f"Objętość prostopadłościanu = {obj}")
+            dodaj_do_historii(f"Prostopadłościan: a={a}, b={b}, c={c}, pole={pole}, objętość={obj}")
+
+        elif bryla == "c":
+            r = wczytaj_liczbe("Promień r = ")
+            h = wczytaj_liczbe("Wysokość h = ")
+            pole = round(2 * math.pi * r * (r + h), 2)
+            obj = round(math.pi * r**2 * h, 2)
+            print(f"Pole powierzchni walca = {pole}")
+            print(f"Objętość walca = {obj}")
+            dodaj_do_historii(f"Walec: r={r}, h={h}, pole={pole}, objętość={obj}")
+
+        elif bryla == "d":
+            r = wczytaj_liczbe("Promień r = ")
+            pole = round(4 * math.pi * r**2, 2)
+            obj = round((4/3) * math.pi * r**3, 2)
+            print(f"Pole powierzchni kuli = {pole}")
+            print(f"Objętość kuli = {obj}")
+            dodaj_do_historii(f"Kula: r={r}, pole={pole}, objętość={obj}")
+
+        elif bryla == "e":
+            r = wczytaj_liczbe("Promień r = ")
+            h = wczytaj_liczbe("Wysokość h = ")
+            l = math.sqrt(r**2 + h**2)
+            pole = round(math.pi * r * (r + l), 2)
+            obj = round((1/3) * math.pi * r**2 * h, 2)
+            print(f"Tworząca l (obliczona) = {round(l, 2)}")
+            print(f"Pole powierzchni stożka = {pole}")
+            print(f"Objętość stożka = {obj}")
+            dodaj_do_historii(f"Stożek: r={r}, h={h}, l={round(l,2)}, pole={pole}, objętość={obj}")
+
+        elif bryla == "f":
+            print("Jak podasz dane graniastosłupa?")
+            print("1 - podaj Pp (pole podstawy), Pb (pole ścian bocznych) i H")
+            print("2 - podaj Pp, obwód podstawy i H (wyliczę Pb = obw * H)")
+            m = input("1 / 2 ? ")
+            if m == "1":
+                Pp = wczytaj_liczbe("Pp (pole podstawy) = ")
+                Pb = wczytaj_liczbe("Pb (pole ścian bocznych) = ")
+                H = wczytaj_liczbe("Wysokość H = ")
+            else:
+                Pp = wczytaj_liczbe("Pp (pole podstawy) = ")
+                obw = wczytaj_liczbe("Obwód podstawy = ")
+                H = wczytaj_liczbe("Wysokość H = ")
+                Pb = obw * H
+                print(f"Obliczone Pb (pole ścian bocznych) = {round(Pb, 2)}")
+            pole = round(2 * Pp + Pb, 2)
+            obj = round(Pp * H, 2)
+            print(f"Pole powierzchni graniastosłupa = {pole}")
+            print(f"Objętość graniastosłupa = {obj}")
+            dodaj_do_historii(f"Graniastosłup: Pp={Pp}, Pb={Pb}, H={H}, pole={pole}, objętość={obj}")
+
+        elif bryla == "g":
+            print("Jak podasz dane ostrosłupa?")
+            print("1 - podaj Pp (pole podstawy), Pb (pole ścian bocznych) i H")
+            print("2 - podaj Pp, obwód podstawy i tworzącą l (wyliczę Pb = 0.5 * obw * l)")
+            m = input("1 / 2 ? ")
+            if m == "1":
+                Pp = wczytaj_liczbe("Pp (pole podstawy) = ")
+                Pb = wczytaj_liczbe("Pb (pole ścian bocznych) = ")
+                H = wczytaj_liczbe("Wysokość H = ")
+            else:
+                Pp = wczytaj_liczbe("Pp (pole podstawy) = ")
+                obw = wczytaj_liczbe("Obwód podstawy = ")
+                l = wczytaj_liczbe("Tworząca l = ")
+                H = wczytaj_liczbe("Wysokość H = ")
+                Pb = 0.5 * obw * l
+                print(f"Obliczone Pb (pole ścian bocznych) = {round(Pb, 2)}")
+            pole = round(Pp + Pb, 2)
+            obj = round((1/3) * Pp * H, 2)
+            print(f"Pole powierzchni ostrosłupa = {pole}")
+            print(f"Objętość ostrosłupa = {obj}")
+            dodaj_do_historii(f"Ostrosłup: Pp={Pp}, Pb={Pb}, H={H}, pole={pole}, objętość={obj}")
+
+        else:
+            print("Nie ma takiej bryły.")
+    except Exception as e:
+        print(f"Błąd: {e}")
+    input("Naciśnij Enter, aby wrócić do menu...")
+
+def main():
+    """Główna funkcja - wywołanie menu raz i zakończenie."""
+    print("=== KALKULATOR GEOMETRII ===")
+    print("\na - Figury płaskie")
+    print("b - Bryły")
+    print("h - Historia obliczeń")
+    print("c - Wyczyść historię")
+    main_choice = input("Wybór: ").lower()
+
+    if main_choice == "a":
+        menu_plaskie()
+    elif main_choice == "b":
+        menu_bryly()
+    elif main_choice == "h":
+        wyswietl_historie()
+    elif main_choice == "c":
+        wyczysc_historie()
+    else:
+        print("Nieprawidłowa opcja.")
+
+if __name__ == "__main__":
+    main()

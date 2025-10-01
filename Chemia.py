@@ -1,57 +1,86 @@
-import random
+from flask import Flask, render_template_string, request
 
-# pytania z odpowiedziami
-pytania = [
-    {
-        "pytanie": "Która liczba atomowa odpowiada tlenowi?",
-        "odpowiedzi": ["6", "7", "8", "16"],
-        "poprawna": "8"
+app = Flask(__name__)
+
+# dane: lekcje i quizy
+lessons = {
+    "budowa-atomu": {
+        "title": "Budowa atomu",
+        "content": """Każdy atom składa się z jądra (protony i neutrony) oraz elektronów krążących wokół niego.
+        
+Ważne liczby:
+- Z — liczba atomowa (liczba protonów).
+- A — liczba masowa (protony + neutrony).
+- N — liczba neutronów = A - Z.
+
+Przykład: 23Na → Z=11, A=23, N=12"""
     },
-    {
-        "pytanie": "Które cząstki znajdują się w jądrze atomowym?",
-        "odpowiedzi": ["Protony i neutrony", "Elektrony", "Protony i elektrony", "Tylko neutrony"],
-        "poprawna": "Protony i neutrony"
-    },
-    {
-        "pytanie": "Izotopy różnią się liczbą...",
-        "odpowiedzi": ["Protonów", "Neutronów", "Elektronów", "Powłok"],
-        "poprawna": "Neutronów"
-    },
-    {
-        "pytanie": "Masa cząsteczkowa wody H2O wynosi około:",
-        "odpowiedzi": ["16", "18", "20", "44"],
-        "poprawna": "18"
-    },
-    {
-        "pytanie": "Atom sodu Na ma Z=11. Ile elektronów ma jon Na+?",
-        "odpowiedzi": ["11", "12", "10", "9"],
-        "poprawna": "10"
+    "izotopy": {
+        "title": "Izotopy",
+        "content": """Izotopy to odmiany tego samego pierwiastka o tej samej liczbie protonów (Z),
+ale różnej liczbie neutronów (N).
+
+Przykład: 12C, 13C, 14C."""
     }
+}
+
+quiz = [
+    {"q": "Która liczba atomowa odpowiada tlenowi?", "a": ["6", "7", "8", "16"], "correct": 2},
+    {"q": "Izotopy różnią się liczbą...", "a": ["Protonów", "Neutronów", "Elektronów", "Powłok"], "correct": 1},
 ]
 
-def quiz():
-    punkty = 0
-    losowe_pytania = random.sample(pytania, len(pytania))  # losowa kolejność
-    
-    for p in losowe_pytania:
-        print("\n" + p["pytanie"])
-        for i, odp in enumerate(p["odpowiedzi"], start=1):
-            print(f"{i}. {odp}")
-        
-        wybor = input("Wybierz odpowiedź (1-4): ")
-        
-        if wybor.isdigit() and 1 <= int(wybor) <= 4:
-            if p["odpowiedzi"][int(wybor)-1] == p["poprawna"]:
-                print("✅ Dobrze!")
-                punkty += 1
-            else:
-                print(f"❌ Źle! Poprawna odpowiedź to: {p['poprawna']}")
-        else:
-            print("⚠️ Nieprawidłowy wybór.")
-    
-    print(f"\nTwój wynik: {punkty}/{len(pytania)} punktów.")
+# szablon HTML
+template = """
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>📘 Nauka chemii</title>
+</head>
+<body style="font-family: Arial; background: #f4f4f4; padding: 20px;">
+  <h1>🔬 Nauka chemii</h1>
+  <nav>
+    <a href="/">Strona główna</a> |
+    <a href="/lekcje">Lekcje</a> |
+    <a href="/quiz">Quiz</a>
+  </nav>
+  <hr>
+  {{ content|safe }}
+</body>
+</html>
+"""
 
-# uruchomienie quizu
+@app.route("/")
+def home():
+    return render_template_string(template, content="<h2>Witaj!</h2><p>Wybierz lekcję lub quiz.</p>")
+
+@app.route("/lekcje")
+def show_lessons():
+    links = "".join([f"<li><a href='/lekcja/{lid}'>{l['title']}</a></li>" for lid, l in lessons.items()])
+    return render_template_string(template, content=f"<h2>Lekcje</h2><ul>{links}</ul>")
+
+@app.route("/lekcja/<lid>")
+def lesson(lid):
+    lesson = lessons.get(lid, {"title": "Nie znaleziono", "content": ""})
+    return render_template_string(template, content=f"<h2>{lesson['title']}</h2><p>{lesson['content']}</p>")
+
+@app.route("/quiz", methods=["GET", "POST"])
+def run_quiz():
+    if request.method == "POST":
+        score = 0
+        for i, q in enumerate(quiz):
+            if str(q["correct"]) == request.form.get(f"q{i}"):
+                score += 1
+        return render_template_string(template, content=f"<h2>Wynik quizu</h2><p>Twój wynik: {score}/{len(quiz)}</p><a href='/quiz'>Spróbuj ponownie</a>")
+    
+    form = "<form method='post'>"
+    for i, q in enumerate(quiz):
+        form += f"<p><b>{q['q']}</b><br>"
+        for j, ans in enumerate(q["a"]):
+            form += f"<label><input type='radio' name='q{i}' value='{j}'> {ans}</label><br>"
+        form += "</p>"
+    form += "<button type='submit'>Sprawdź</button></form>"
+    return render_template_string(template, content=form)
+
 if __name__ == "__main__":
-    print("🔬 Quiz z chemii: Budowa atomu i podstawy")
-    quiz()
+    app.run(debug=True)

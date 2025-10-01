@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>🔬 Nauka chemii</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    nav {
+      background: #34495e;
+      padding: 10px;
+      text-align: center;
+    }
+    nav a {
+      color: white;
+      margin: 0 10px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    main {
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .lesson, .quiz {
+      margin-bottom: 30px;
+    }
+    button {
+      background: #2c3e50;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #1a242f;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📘 Nauka chemii</h1>
+    <p>Budowa atomu, izotopy, masy i quizy</p>
+  </header>
+  <nav>
+    <a href="#lekcje">Lekcje</a>
+    <a href="#quiz">Quiz</a>
+  </nav>
+
+  <main>
+    <section id="lekcje" class="lesson">
+      <h2>📖 Lekcje</h2>
+      <h3>Budowa atomu</h3>
+      <p>Każdy atom składa się z jądra (protony i neutrony) oraz elektronów krążących wokół niego.</p>
+      <ul>
+        <li>Z – liczba atomowa (liczba protonów).</li>
+        <li>A – liczba masowa (protony + neutrony).</li>
+        <li>N – liczba neutronów = A – Z.</li>
+      </ul>
+      <p><b>Przykład:</b> <sup>23</sup><sub>11</sub>Na → Z=11, A=23, N=12</p>
+
+      <h3>Izotopy</h3>
+      <p>Izotopy to odmiany tego samego pierwiastka o tej samej liczbie protonów (Z),
+      ale różnej liczbie neutronów (N).</p>
+      <p><b>Przykład:</b> ¹²C, ¹³C, ¹⁴C</p>
+
+      <h3>Masy atomowe i cząsteczkowe</h3>
+      <p>Masa atomowa względna (Ar) – średnia ważona mas izotopów danego pierwiastka.</p>
+      <p>Masa cząsteczkowa (Mr) – suma mas atomowych atomów w cząsteczce.</p>
+      <p><b>Przykład:</b> H₂O → 2×1 + 16 = 18 u</p>
+    </section>
+
+    <section id="quiz" class="quiz">
+      <h2>📝 Quiz</h2>
+      <form id="quizForm">
+        <p>1. Która liczba atomowa odpowiada tlenowi?</p>
+        <label><input type="radio" name="q1" value="6"> 6</label><br>
+        <label><input type="radio" name="q1" value="7"> 7</label><br>
+        <label><input type="radio" name="q1" value="8"> 8</label><br>
+        <label><input type="radio" name="q1" value="16"> 16</label><br>
+
+        <p>2. Izotopy różnią się liczbą...</p>
+        <label><input type="radio" name="q2" value="protonów"> Protonów</label><br>
+        <label><input type="radio" name="q2" value="neutronów"> Neutronów</label><br>
+        <label><input type="radio" name="q2" value="elektronów"> Elektronów</label><br>
+        <label><input type="radio" name="q2" value="powłok"> Powłok</label><br>
+
+        <button type="button" onclick="checkQuiz()">Sprawdź odpowiedzi</button>
+      </form>
+      <p id="result"></p>
+    </section>
+  </main>
+
+  <script>
+    function checkQuiz() {
+      let score = 0;
+      const form = document.forms['quizForm'];
+
+      if (form.q1.value === "8") score++;
+      if (form.q2.value === "neutronów") score++;
+
+      document.getElementById("result").innerText = "Twój wynik: " + score + "/2";
+    }
+  </script>
+</body>
+</html>

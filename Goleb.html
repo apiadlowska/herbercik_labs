@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>🐦 Gołąb: Latanie po mieście</title>
+<style>
+  body { margin: 0; overflow: hidden; background: skyblue; }
+  canvas { display: block; margin: auto; background: linear-gradient(#87CEEB, #f0f8ff); }
+</style>
+</head>
+<body>
+<canvas id="game" width="800" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+let goleb = {x: 100, y: 200, size: 20, velY: 0};
+let gravity = 0.5;
+let seeds = [];
+let obstacles = [];
+let score = 0;
+let running = true;
+
+function newSeed() {
+  seeds.push({x: 800, y: Math.random() * 300 + 50, size: 10});
+}
+function newObstacle() {
+  obstacles.push({x: 800, y: Math.random() * 250 + 100, w: 30, h: 60});
+}
+for (let i=0;i<5;i++){ newSeed(); newObstacle(); }
+
+function loop() {
+  if (!running) return;
+  ctx.fillStyle = "#87CEEB";
+  ctx.fillRect(0,0,800,400);
+
+  goleb.velY += gravity;
+  goleb.y += goleb.velY;
+  if (goleb.y > 380) goleb.y = 380;
+  if (goleb.y < 0) goleb.y = 0;
+
+  ctx.fillStyle = "white";
+  ctx.beginPath();
+  ctx.ellipse(goleb.x, goleb.y, 25, 15, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // ziarna
+  ctx.fillStyle = "brown";
+  seeds.forEach((s, i) => {
+    s.x -= 4;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.size, 0, Math.PI*2);
+    ctx.fill();
+    if (Math.abs(goleb.x - s.x) < 20 && Math.abs(goleb.y - s.y) < 20) {
+      seeds.splice(i,1);
+      score++;
+      newSeed();
+    }
+  });
+
+  // przeszkody
+  ctx.fillStyle = "gray";
+  obstacles.forEach((o, i) => {
+    o.x -= 6;
+    ctx.fillRect(o.x, o.y, o.w, o.h);
+    if (goleb.x + 25 > o.x && goleb.x - 25 < o.x + o.w &&
+        goleb.y + 15 > o.y && goleb.y - 15 < o.y + o.h) {
+      running = false;
+      ctx.fillStyle = "black";
+      ctx.font = "30px Arial";
+      ctx.fillText("💥 KONIEC GRY!", 280, 200);
+    }
+  });
+
+  ctx.fillStyle = "black";
+  ctx.font = "20px Arial";
+  ctx.fillText("Punkty: " + score, 10, 30);
+
+  requestAnimationFrame(loop);
+}
+
+function jump() {
+  goleb.velY = -7;
+}
+document.addEventListener("keydown", e => { if (e.code === "Space") jump(); });
+document.addEventListener("click", jump);
+
+loop();
+</script>
+</body>
+</html>

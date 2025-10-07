@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>🐦 Gołąb i Fizyka</title>
+<title>🐦 Gołąb i Fizyka 2.0</title>
 <style>
   body {
     margin: 0;
@@ -12,10 +12,22 @@
   }
   canvas {
     display: block;
-    margin: auto;
+    margin: 40px auto;
     background: linear-gradient(#aee1f9, #f0f9ff);
     border: 4px solid #2980b9;
     border-radius: 10px;
+  }
+  #overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
   }
   #questionBox {
     position: absolute;
@@ -48,6 +60,12 @@
 </head>
 <body>
 
+<div id="overlay">
+  <h1>🐦 Gołąb i Fizyka</h1>
+  <p>Sterowanie: W – góra, S – dół, A – w lewo, D – w prawo, Spacja – skok</p>
+  <button onclick="startGame()">Start gry</button>
+</div>
+
 <canvas id="game" width="800" height="400"></canvas>
 
 <div id="questionBox">
@@ -58,22 +76,31 @@
 <script>
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
 
-let goleb = {x: 100, y: 200, size: 20, velY: 0};
-let gravity = 0.5;
+let goleb = {x: 100, y: 200, size: 20, velY: 0, velX: 0};
+let gravity = 0.3;
+let speed = 4;
 let seeds = [];
 let obstacles = [];
 let score = 0;
 let level = 1;
-let running = true;
+let running = false;
 let waitingForAnswer = false;
+let keys = {};
 
-// pytania z fizyki
 const quiz = [
   { q: "Jaką jednostką mierzymy siłę?", a: ["Niuton", "Dżul", "Wat", "Pascal"], correct: 0 },
   { q: "Jak nazywa się przyspieszenie ziemskie?", a: ["g", "v", "p", "f"], correct: 0 },
   { q: "Jak obliczyć drogę w ruchu jednostajnym?", a: ["s = v·t", "s = a·t²", "s = m·v", "s = F·t"], correct: 0 }
 ];
+
+function startGame() {
+  overlay.style.display = "none";
+  running = true;
+  resetLevel();
+  loop();
+}
 
 function newSeed() {
   seeds.push({x: 800, y: Math.random() * 300 + 50, size: 10});
@@ -81,8 +108,6 @@ function newSeed() {
 function newObstacle() {
   obstacles.push({x: 800, y: Math.random() * 250 + 100, w: 30, h: 60});
 }
-
-for (let i=0;i<5;i++){ newSeed(); newObstacle(); }
 
 function drawGoleb() {
   ctx.fillStyle = "white";
@@ -123,13 +148,19 @@ function checkAnswer(correct) {
 }
 
 function resetLevel() {
-  goleb.y = 200;
+  goleb = {x: 100, y: 200, size: 20, velY: 0, velX: 0};
   seeds = [];
   obstacles = [];
   for (let i=0;i<5;i++){ newSeed(); newObstacle(); }
   score = 0;
-  running = true;
-  loop();
+}
+
+function moveGoleb() {
+  if (keys['w']) goleb.y -= speed;
+  if (keys['s']) goleb.y += speed;
+  if (keys['a']) goleb.x -= speed;
+  if (keys['d']) goleb.x += speed;
+  if (keys[' ']) goleb.velY = -6; // spacja - skok
 }
 
 function loop() {
@@ -138,6 +169,8 @@ function loop() {
   ctx.fillStyle = "#aee1f9";
   ctx.fillRect(0,0,800,400);
 
+  moveGoleb();
+
   goleb.velY += gravity;
   goleb.y += goleb.velY;
   if (goleb.y > 380) goleb.y = 380;
@@ -145,21 +178,19 @@ function loop() {
 
   drawGoleb();
 
-  // ziarna
   ctx.fillStyle = "saddlebrown";
   seeds.forEach((s, i) => {
     s.x -= 4;
     ctx.beginPath();
     ctx.arc(s.x, s.y, s.size, 0, Math.PI*2);
     ctx.fill();
-    if (Math.abs(goleb.x - s.x) < 20 && Math.abs(goleb.y - s.y) < 20) {
+    if (Math.abs(goleb.x - s.x) < 25 && Math.abs(goleb.y - s.y) < 25) {
       seeds.splice(i,1);
       score++;
       newSeed();
     }
   });
 
-  // przeszkody
   ctx.fillStyle = "#555";
   obstacles.forEach((o, i) => {
     o.x -= 6;
@@ -167,9 +198,8 @@ function loop() {
     if (goleb.x + 25 > o.x && goleb.x - 25 < o.x + o.w &&
         goleb.y + 15 > o.y && goleb.y - 15 < o.y + o.h) {
       running = false;
-      ctx.fillStyle = "black";
-      ctx.font = "30px Arial";
-      ctx.fillText("💥 KONIEC GRY!", 280, 200);
+      overlay.style.display = "flex";
+      overlay.innerHTML = `<h1>💥 KONIEC GRY!</h1><p>Twój wynik: ${score}</p><button onclick="startGame()">Zagraj ponownie</button>`;
     }
   });
 
@@ -178,7 +208,6 @@ function loop() {
   ctx.fillText("Punkty: " + score, 10, 30);
   ctx.fillText("Poziom: " + level, 680, 30);
 
-  // przejście poziomu
   if (score >= 5) {
     running = false;
     showQuestion();
@@ -187,13 +216,9 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-function jump() {
-  if (!waitingForAnswer) goleb.velY = -7;
-}
-document.addEventListener("keydown", e => { if (e.code === "Space") jump(); });
-document.addEventListener("click", jump);
-
-loop();
+// sterowanie
+document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
+document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 </script>
 </body>
 </html>

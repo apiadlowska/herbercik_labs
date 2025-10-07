@@ -1,0 +1,103 @@
+import pygame
+import random
+import sys
+
+pygame.init()
+
+# okno gry
+szer, wys = 800, 600
+ekran = pygame.display.set_mode((szer, wys))
+pygame.display.set_caption("🐦 Gołąb: Zbieranie ziaren")
+
+# kolory
+NIEBO = (135, 206, 235)
+ZIEMIA = (50, 205, 50)
+BIALY = (255, 255, 255)
+BRAZOWY = (139, 69, 19)
+
+# grafika gołębia (prosty kształt)
+goleb = pygame.Rect(100, wys//2, 40, 30)
+predkosc_y = 0
+grawitacja = 0.5
+punkty = 0
+
+# ziarna i przeszkody
+ziarna = []
+przeszkody = []
+
+clock = pygame.time.Clock()
+font = pygame.font.SysFont("arial", 28)
+
+def dodaj_ziarno():
+    x = random.randint(szer, szer + 400)
+    y = random.randint(100, wys - 100)
+    ziarna.append(pygame.Rect(x, y, 20, 20))
+
+def dodaj_przeszkode():
+    x = random.randint(szer, szer + 500)
+    y = random.randint(100, wys - 100)
+    przeszkody.append(pygame.Rect(x, y, 40, 80))
+
+for _ in range(5):
+    dodaj_ziarno()
+    dodaj_przeszkode()
+
+# pętla gry
+running = True
+while running:
+    ekran.fill(NIEBO)
+    pygame.draw.rect(ekran, ZIEMIA, (0, wys - 50, szer, 50))
+    
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+
+    # sterowanie
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_SPACE]:
+        predkosc_y = -7
+
+    # fizyka lotu
+    predkosc_y += grawitacja
+    goleb.y += int(predkosc_y)
+
+    # nie spada pod ziemię
+    if goleb.bottom > wys - 50:
+        goleb.bottom = wys - 50
+        predkosc_y = 0
+    if goleb.top < 0:
+        goleb.top = 0
+
+    # przesuwanie ziaren i przeszkód
+    for z in ziarna:
+        z.x -= 5
+        pygame.draw.ellipse(ekran, BRAZOWY, z)
+        if goleb.colliderect(z):
+            punkty += 1
+            ziarna.remove(z)
+            dodaj_ziarno()
+    for p in przeszkody:
+        p.x -= 7
+        pygame.draw.rect(ekran, (100, 100, 100), p)
+        if goleb.colliderect(p):
+            running = False
+
+    # rysowanie gołębia
+    pygame.draw.ellipse(ekran, BIALY, goleb)
+    pygame.draw.circle(ekran, (0, 0, 0), (goleb.x + 30, goleb.y + 10), 3)
+
+    # punkty
+    tekst = font.render(f"Punkty: {punkty}", True, (0, 0, 0))
+    ekran.blit(tekst, (10, 10))
+
+    pygame.display.flip()
+    clock.tick(30)
+
+# koniec gry
+ekran.fill(BIALY)
+koniec = font.render(f"Koniec gry! Wynik: {punkty}", True, (0, 0, 0))
+ekran.blit(koniec, (szer//2 - 150, wys//2))
+pygame.display.flip()
+pygame.time.wait(3000)
+pygame.quit()

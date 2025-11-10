@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Geometryczny</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .nav-button {
+            width: 100%;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            text-align: left;
+        }
+
+        .nav-button:hover {
+            border-color: #4facfe;
+            background: #f0f8ff;
+            transform: translateX(5px);
+        }
+
+        .nav-button.active {
+            background: #4facfe;
+            color: white;
+            border-color: #4facfe;
+        }
+
+        .shape-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .shape-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .shape-card:hover {
+            border-color: #4facfe;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.2);
+        }
+
+        .shape-card.selected {
+            border-color: #4facfe;
+            background: #f0f8ff;
+        }
+
+        .shape-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .calculator-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            width: 100%;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .results {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #4facfe;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .history {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .clear-history {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .description {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-style: italic;
+            color: #1565c0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .shape-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔢 Kalkulator Geometryczny</h1>
+            <p>Oblicz pola, obwody i objętości figur geometrycznych</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <button class="nav-button active" onclick="showSection('plaskie')">
+                    📐 Figury Płaskie
+                </button>
+                <button class="nav-button" onclick="showSection('bryly')">
+                    📦 Bryły
+                </button>
+                <button class="nav-button" onclick="showSection('historia')">
+                    📋 Historia
+                </button>
+                
+                <div class="history">
+                    <h3>Ostatnie obliczenia:</h3>
+                    <div id="recent-history"></div>
+                    <button class="clear-history" onclick="clearHistory()">Wyczyść historię</button>
+                </div>
+            </div>
+            
+            <div class="content">
+                <!-- Figury Płaskie -->
+                <div id="plaskie-section" class="section">
+                    <h2>Figury Płaskie</h2>
+                    <div class="shape-grid">
+                        <div class="shape-card" onclick="selectShape('kolo')">
+                            <div class="shape-icon">⭕</div>
+                            <h3>Koło</h3>
+                            <p>Pole i obwód</p>
+                        </div>
+                        <div class="shape-card" onclick="selectShape('kwadrat')">
+                            <div class="shape-icon">⬜</div>
+                            <h3>Kwadrat</h3>
+                            <p>Pole, obwód, przekątna</p>
+                        </div>
+                        <div class="shape-card" onclick="selectShape('prostokat')">
+                            <div class="shape-icon">▭</div>
+                            <h3>Prostokąt</h3>
+                            <p>Pole i obwód</p>
+                        </div>
+                        <div class="shape-card" onclick="selectShape('trojkat')">
+                            <div class="shape-icon">🔺</div>
+                            <h3>Trójkąt</h3>
+                            <p>Wzór Herona</p>
+                        </div>
+                        <div class="shape-card" onclick="selectShape('trojkat-rownoboczny')">
+                            <div class="shape-icon">🔻</div>
+                            <h3>Trójkąt równoboczny</h3>
+                            <p>Pole i obwód</p>
+                        </div>
+                        <div class="shape-card" onclick="selectShape('trapez')">
+                            <div class="shape-icon">⏢</div>
+                            <h3>Trapez</h3>
+                            <p>Pole i obwód</p>
+                        </div>
+                        <div class="shape-card" onclick="selectShape('romb')">
+                            <div class="shape-icon">🔷</div>
+                            <h3>Romb</h3>
+                            <p>2 wzory na pole</p>
+                        </div>
+                    </div>
+                    
+                    <div id="calculator" class="calculator-section hidden">
+                        <div id="shape-description" class="description"></div>
+                        <div id="inputs"></div>
+                        <button class="calculate-btn" onclick="calculate()">Oblicz</button>
+                        <div id="results" class="results hidden"></div>
+                    </div>
+                </div>
+                
+                <!-- Bryły -->
+                <div id="bryly-section" class="section hidden">
+                    <h2>Bryły</h2>
+                    <div class="shape-grid">
+                        <div class="shape-card" onclick="selectShape('szescian')">
+                            <div class="shape-icon">🧊</div>
+                            <h3>Sześcian</h3>
+                            <p>Objętość i pole powierzchni</p>
+                        </div>
+                        <div class="shape-card" onclick="selectShape('prostopadloscian')">
+                            <div class="shape-icon">📦</div>
+                            <h3>Prostopadłościan</h3>
+                            <p>Objętość i pole powierzchni</p>
+                        </div>
+                        <div class="shape-card" onclick="selectShape('walec')">
+                            <div class="shape-icon">🥫</div>
+                            <h3>Walec</h3>
+                            <p>Objętość i pole powierzchni</p>
+                        </div>
+                        <div class="shape-card" onclick="selectShape('kula')">
+                            <div class="shape-icon">⚽</div>
+                            <h3>Kula</h3>
+                            <p>Objętość i pole powierzchni</p>
+                        </div>
+                        <div class="shape-card" onclick="selectShape('stozek')">
+                            <div class="shape-icon">🍦</div>
+                            <h3>Stożek</h3>
+                            <p>Objętość i pole powierzchni</p>
+                        </div>
+                    </div>
+                    
+                    <div id="calculator-bryly" class="calculator-section hidden">
+                        <div id="shape-description-bryly" class="description"></div>
+                        <div id="inputs-bryly"></div>
+                        <button class="calculate-btn" onclick="calculateBryly()">Oblicz</button>
+                        <div id="results-bryly" class="results hidden"></div>
+                    </div>
+                </div>
+                
+                <!-- Historia -->
+                <div id="historia-section" class="section hidden">
+                    <h2>Historia Obliczeń</h2>
+                    <div id="full-history" class="history" style="max-height: 500px;">
+                        <p>Brak historii obliczeń.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let historia = [];
+        let currentShape = null;
+        let currentSection = 'plaskie';
+
+        const descriptions = {
+            'kolo': 'Koło: figura płaska, wszystkie punkty są w tej samej odległości od środka.',
+            'kwadrat': 'Kwadrat: czworokąt o równych bokach i kątach prostych.',
+            'prostokat': 'Prostokąt: czworokąt o kątach prostych.',
+            'trojkat': 'Trójkąt (Heron): dowolny trójkąt, pole liczone wzorem Herona.',
+            'trojkat-rownoboczny': 'Trójkąt równoboczny: wszystkie boki równe.',
+            'trapez': 'Trapez: czworokąt z jedną parą boków równoległych.',
+            'romb': 'Romb: czworokąt o równych bokach. Pole można obliczyć na 2 sposoby: przez przekątne lub przez bok i wysokość.',
+            'szescian': 'Sześcian: bryła o 6 równych kwadratowych ścianach.',
+            'prostopadloscian': 'Prostopadłościan: bryła o 6 prostokątnych ścianach.',
+            'walec': 'Walec: bryła o dwóch równoległych podstawach kołowych.',
+            'kula': 'Kula: zbiór punktów w równej odległości od środka.',
+            'stozek': 'Stożek: bryła z podstawą kołową i wierzchołkiem.'
+        };
+
+        function showSection(section) {
+            // Update navigation
+            document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(sec => sec.classList.add('hidden'));
+            
+            // Show selected section
+            document.getElementById(section + '-section').classList.remove('hidden');
+            currentSection = section;
+            
+            // Reset shape selection
+            currentShape = null;
+            document.querySelectorAll('.shape-card').forEach(card => card.classList.remove('selected'));
+            document.getElementById('calculator').classList.add('hidden');
+            document.getElementById('calculator-bryly').classList.add('hidden');
+        }
+
+        function selectShape(shape) {
+            currentShape = shape;
+            
+            // Update visual selection
+            document.querySelectorAll('.shape-card').forEach(card => card.classList.remove('selected'));
+            event.target.closest('.shape-card').classList.add('selected');
+            
+            // Show appropriate calculator
+            if (currentSection === 'plaskie') {
+                showCalculator(shape);
+            } else {
+                showCalculatorBryly(shape);
+            }
+        }
+
+        function showCalculator(shape) {
+            const calculator = document.getElementById('calculator');
+            const description = document.getElementById('shape-description');
+            const inputs = document.getElementById('inputs');
+            const results = document.getElementById('results');
+            
+            description.textContent = descriptions[shape];
+            results.classList.add('hidden');
+            
+            let inputsHTML = '';
+            
+            switch(shape) {
+                case 'kolo':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Promień (r):</label>
+                            <input type="number" id="r" step="0.01" min="0.01" placeholder="Wprowadź promień">
+                        </div>
+                    `;
+                    break;
+                case 'kwadrat':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Bok (a):</label>
+                            <input type="number" id="a" step="0.01" min="0.01" placeholder="Wprowadź długość boku">
+                        </div>
+                    `;
+                    break;
+                case 'prostokat':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Bok a:</label>
+                            <input type="number" id="a" step="0.01" min="0.01" placeholder="Wprowadź długość boku a">
+                        </div>
+                        <div class="input-group">
+                            <label>Bok b:</label>
+                            <input type="number" id="b" step="0.01" min="0.01" placeholder="Wprowadź długość boku b">
+                        </div>
+                    `;
+                    break;
+                case 'trojkat':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Bok a:</label>
+                            <input type="number" id="a" step="0.01" min="0.01" placeholder="Wprowadź długość boku a">
+                        </div>
+                        <div class="input-group">
+                            <label>Bok b:</label>
+                            <input type="number" id="b" step="0.01" min="0.01" placeholder="Wprowadź długość boku b">
+                        </div>
+                        <div class="input-group">
+                            <label>Bok c:</label>
+                            <input type="number" id="c" step="0.01" min="0.01" placeholder="Wprowadź długość boku c">
+                        </div>
+                    `;
+                    break;
+                case 'trojkat-rownoboczny':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Bok (a):</label>
+                            <input type="number" id="a" step="0.01" min="0.01" placeholder="Wprowadź długość boku">
+                        </div>
+                    `;
+                    break;
+                case 'trapez':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Podstawa a:</label>
+                            <input type="number" id="a" step="0.01" min="0.01" placeholder="Wprowadź długość podstawy a">
+                        </div>
+                        <div class="input-group">
+                            <label>Podstawa b:</label>
+                            <input type="number" id="b" step="0.01" min="0.01" placeholder="Wprowadź długość podstawy b">
+                        </div>
+                        <div class="input-group">
+                            <label>Wysokość (h):</label>
+                            <input type="number" id="h" step="0.01" min="0.01" placeholder="Wprowadź wysokość">
+                        </div>
+                    `;
+                    break;
+                case 'romb':
+                    inputsHTML = `
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <h4 style="margin-bottom: 10px; color: #1565c0;">Wybierz sposób obliczenia:</h4>
+                            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                <button type="button" id="method1" onclick="selectRombMethod(1)" style="padding: 8px 15px; border: 2px solid #4facfe; background: #4facfe; color: white; border-radius: 5px; cursor: pointer;">Przez przekątne</button>
+                                <button type="button" id="method2" onclick="selectRombMethod(2)" style="padding: 8px 15px; border: 2px solid #4facfe; background: white; color: #4facfe; border-radius: 5px; cursor: pointer;">Przez bok i wysokość</button>
+                            </div>
+                        </div>
+                        <div id="romb-inputs1">
+                            <div class="input-group">
+                                <label>Przekątna d1:</label>
+                                <input type="number" id="d1" step="0.01" min="0.01" placeholder="Wprowadź długość pierwszej przekątnej">
+                            </div>
+                            <div class="input-group">
+                                <label>Przekątna d2:</label>
+                                <input type="number" id="d2" step="0.01" min="0.01" placeholder="Wprowadź długość drugiej przekątnej">
+                            </div>
+                        </div>
+                        <div id="romb-inputs2" class="hidden">
+                            <div class="input-group">
+                                <label>Bok (a):</label>
+                                <input type="number" id="a" step="0.01" min="0.01" placeholder="Wprowadź długość boku">
+                            </div>
+                            <div class="input-group">
+                                <label>Wysokość (h):</label>
+                                <input type="number" id="h" step="0.01" min="0.01" placeholder="Wprowadź wysokość">
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            inputs.innerHTML = inputsHTML;
+            calculator.classList.remove('hidden');
+        }
+
+        function showCalculatorBryly(shape) {
+            const calculator = document.getElementById('calculator-bryly');
+            const description = document.getElementById('shape-description-bryly');
+            const inputs = document.getElementById('inputs-bryly');
+            const results = document.getElementById('results-bryly');
+            
+            description.textContent = descriptions[shape];
+            results.classList.add('hidden');
+            
+            let inputsHTML = '';
+            
+            switch(shape) {
+                case 'szescian':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Krawędź (a):</label>
+                            <input type="number" id="a" step="0.01" min="0.01" placeholder="Wprowadź długość krawędzi">
+                        </div>
+                    `;
+                    break;
+                case 'prostopadloscian':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Długość (a):</label>
+                            <input type="number" id="a" step="0.01" min="0.01" placeholder="Wprowadź długość">
+                        </div>
+                        <div class="input-group">
+                            <label>Szerokość (b):</label>
+                            <input type="number" id="b" step="0.01" min="0.01" placeholder="Wprowadź szerokość">
+                        </div>
+                        <div class="input-group">
+                            <label>Wysokość (c):</label>
+                            <input type="number" id="c" step="0.01" min="0.01" placeholder="Wprowadź wysokość">
+                        </div>
+                    `;
+                    break;
+                case 'walec':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Promień (r):</label>
+                            <input type="number" id="r" step="0.01" min="0.01" placeholder="Wprowadź promień podstawy">
+                        </div>
+                        <div class="input-group">
+                            <label>Wysokość (h):</label>
+                            <input type="number" id="h" step="0.01" min="0.01" placeholder="Wprowadź wysokość">
+                        </div>
+                    `;
+                    break;
+                case 'kula':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Promień (r):</label>
+                            <input type="number" id="r" step="0.01" min="0.01" placeholder="Wprowadź promień">
+                        </div>
+                    `;
+                    break;
+                case 'stozek':
+                    inputsHTML = `
+                        <div class="input-group">
+                            <label>Promień (r):</label>
+                            <input type="number" id="r" step="0.01" min="0.01" placeholder="Wprowadź promień podstawy">
+                        </div>
+                        <div class="input-group">
+                            <label>Wysokość (h):</label>
+                            <input type="number" id="h" step="0.01" min="0.01" placeholder="Wprowadź wysokość">
+                        </div>
+                    `;
+                    break;
+            }
+            
+            inputs.innerHTML = inputsHTML;
+            calculator.classList.remove('hidden');
+        }
+
+        function calculate() {
+            const results = document.getElementById('results');
+            let resultsHTML = '';
+            let historyEntry = '';
+            
+            try {
+                switch(currentShape) {
+                    case 'kolo':
+                        const r = parseFloat(document.getElementById('r').value);
+                        if (r <= 0) throw new Error('Promień musi być większy od zera');
+                        
+                        const poleKolo = Math.round(Math.PI * r * r * 100) / 100;
+                        const obwodKolo = Math.round(2 * Math.PI * r * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Pole koła:</span>
+                                <strong>${poleKolo}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Obwód koła:</span>
+                                <strong>${obwodKolo}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Koło: r=${r}, pole=${poleKolo}, obwód=${obwodKolo}`;
+                        break;
+                        
+                    case 'kwadrat':
+                        const a = parseFloat(document.getElementById('a').value);
+                        if (a <= 0) throw new Error('Bok musi być większy od zera');
+                        
+                        const poleKwadrat = Math.round(a * a * 100) / 100;
+                        const obwodKwadrat = Math.round(4 * a * 100) / 100;
+                        const przekatna = Math.round(a * Math.sqrt(2) * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Pole kwadratu:</span>
+                                <strong>${poleKwadrat}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Obwód kwadratu:</span>
+                                <strong>${obwodKwadrat}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Przekątna:</span>
+                                <strong>${przekatna}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Kwadrat: a=${a}, pole=${poleKwadrat}, obwód=${obwodKwadrat}, przekątna=${przekatna}`;
+                        break;
+                        
+                    case 'prostokat':
+                        const aP = parseFloat(document.getElementById('a').value);
+                        const bP = parseFloat(document.getElementById('b').value);
+                        if (aP <= 0 || bP <= 0) throw new Error('Boki muszą być większe od zera');
+                        
+                        const poleProstokat = Math.round(aP * bP * 100) / 100;
+                        const obwodProstokat = Math.round(2 * (aP + bP) * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Pole prostokąta:</span>
+                                <strong>${poleProstokat}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Obwód prostokąta:</span>
+                                <strong>${obwodProstokat}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Prostokąt: a=${aP}, b=${bP}, pole=${poleProstokat}, obwód=${obwodProstokat}`;
+                        break;
+                        
+                    case 'trojkat':
+                        const aT = parseFloat(document.getElementById('a').value);
+                        const bT = parseFloat(document.getElementById('b').value);
+                        const cT = parseFloat(document.getElementById('c').value);
+                        if (aT <= 0 || bT <= 0 || cT <= 0) throw new Error('Boki muszą być większe od zera');
+                        
+                        // Sprawdzenie nierówności trójkąta
+                        if (aT + bT <= cT || aT + cT <= bT || bT + cT <= aT) {
+                            throw new Error('Te boki nie mogą utworzyć trójkąta');
+                        }
+                        
+                        const obwodTrojkat = aT + bT + cT;
+                        const s = obwodTrojkat / 2;
+                        const poleTrojkat = Math.round(Math.sqrt(s * (s - aT) * (s - bT) * (s - cT)) * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Pole trójkąta:</span>
+                                <strong>${poleTrojkat}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Obwód trójkąta:</span>
+                                <strong>${obwodTrojkat}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Trójkąt: a=${aT}, b=${bT}, c=${cT}, pole=${poleTrojkat}, obwód=${obwodTrojkat}`;
+                        break;
+                        
+                    case 'trojkat-rownoboczny':
+                        const aR = parseFloat(document.getElementById('a').value);
+                        if (aR <= 0) throw new Error('Bok musi być większy od zera');
+                        
+                        const poleRownoboczny = Math.round((Math.sqrt(3) / 4) * aR * aR * 100) / 100;
+                        const obwodRownoboczny = Math.round(3 * aR * 100) / 100;
+                        const wysokoscRownoboczny = Math.round((Math.sqrt(3) / 2) * aR * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Pole trójkąta:</span>
+                                <strong>${poleRownoboczny}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Obwód trójkąta:</span>
+                                <strong>${obwodRownoboczny}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Wysokość:</span>
+                                <strong>${wysokoscRownoboczny}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Trójkąt równoboczny: a=${aR}, pole=${poleRownoboczny}, obwód=${obwodRownoboczny}`;
+                        break;
+                        
+                    case 'trapez':
+                        const aTr = parseFloat(document.getElementById('a').value);
+                        const bTr = parseFloat(document.getElementById('b').value);
+                        const hTr = parseFloat(document.getElementById('h').value);
+                        if (aTr <= 0 || bTr <= 0 || hTr <= 0) throw new Error('Wszystkie wartości muszą być większe od zera');
+                        
+                        const poleTrapez = Math.round(((aTr + bTr) / 2) * hTr * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Pole trapezu:</span>
+                                <strong>${poleTrapez}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Trapez: a=${aTr}, b=${bTr}, h=${hTr}, pole=${poleTrapez}`;
+                        break;
+                        
+                    case 'romb':
+                        const method1Visible = !document.getElementById('romb-inputs1').classList.contains('hidden');
+                        
+                        if (method1Visible) {
+                            // Wzór przez przekątne: P = (d1 * d2) / 2
+                            const d1 = parseFloat(document.getElementById('d1').value);
+                            const d2 = parseFloat(document.getElementById('d2').value);
+                            if (d1 <= 0 || d2 <= 0) throw new Error('Przekątne muszą być większe od zera');
+                            
+                            const poleRomb = Math.round((d1 * d2) / 2 * 100) / 100;
+                            const bokRomb = Math.round(Math.sqrt((d1/2) * (d1/2) + (d2/2) * (d2/2)) * 100) / 100;
+                            const obwodRomb = Math.round(4 * bokRomb * 100) / 100;
+                            
+                            resultsHTML = `
+                                <div class="result-item">
+                                    <span>Pole rombu (przez przekątne):</span>
+                                    <strong>${poleRomb}</strong>
+                                </div>
+                                <div class="result-item">
+                                    <span>Długość boku:</span>
+                                    <strong>${bokRomb}</strong>
+                                </div>
+                                <div class="result-item">
+                                    <span>Obwód rombu:</span>
+                                    <strong>${obwodRomb}</strong>
+                                </div>
+                            `;
+                            historyEntry = `Romb (przekątne): d1=${d1}, d2=${d2}, pole=${poleRomb}, bok=${bokRomb}, obwód=${obwodRomb}`;
+                        } else {
+                            // Wzór przez bok i wysokość: P = a * h
+                            const aRomb = parseFloat(document.getElementById('a').value);
+                            const hRomb = parseFloat(document.getElementById('h').value);
+                            if (aRomb <= 0 || hRomb <= 0) throw new Error('Bok i wysokość muszą być większe od zera');
+                            
+                            const poleRomb = Math.round(aRomb * hRomb * 100) / 100;
+                            const obwodRomb = Math.round(4 * aRomb * 100) / 100;
+                            
+                            resultsHTML = `
+                                <div class="result-item">
+                                    <span>Pole rombu (przez bok i wysokość):</span>
+                                    <strong>${poleRomb}</strong>
+                                </div>
+                                <div class="result-item">
+                                    <span>Obwód rombu:</span>
+                                    <strong>${obwodRomb}</strong>
+                                </div>
+                            `;
+                            historyEntry = `Romb (bok×wysokość): a=${aRomb}, h=${hRomb}, pole=${poleRomb}, obwód=${obwodRomb}`;
+                        }
+                        break;
+                }
+                
+                results.innerHTML = resultsHTML;
+                results.classList.remove('hidden');
+                addToHistory(historyEntry);
+                
+            } catch (error) {
+                results.innerHTML = `<div class="result-item" style="color: red;"><span>Błąd:</span><strong>${error.message}</strong></div>`;
+                results.classList.remove('hidden');
+            }
+        }
+
+        function calculateBryly() {
+            const results = document.getElementById('results-bryly');
+            let resultsHTML = '';
+            let historyEntry = '';
+            
+            try {
+                switch(currentShape) {
+                    case 'szescian':
+                        const a = parseFloat(document.getElementById('a').value);
+                        if (a <= 0) throw new Error('Krawędź musi być większa od zera');
+                        
+                        const objetoscSzescian = Math.round(a * a * a * 100) / 100;
+                        const polePowierzchniSzescian = Math.round(6 * a * a * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Objętość sześcianu:</span>
+                                <strong>${objetoscSzescian}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Pole powierzchni:</span>
+                                <strong>${polePowierzchniSzescian}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Sześcian: a=${a}, objętość=${objetoscSzescian}, pole powierzchni=${polePowierzchniSzescian}`;
+                        break;
+                        
+                    case 'prostopadloscian':
+                        const aP = parseFloat(document.getElementById('a').value);
+                        const bP = parseFloat(document.getElementById('b').value);
+                        const cP = parseFloat(document.getElementById('c').value);
+                        if (aP <= 0 || bP <= 0 || cP <= 0) throw new Error('Wszystkie wymiary muszą być większe od zera');
+                        
+                        const objetoscProstopadloscian = Math.round(aP * bP * cP * 100) / 100;
+                        const polePowierzchniProstopadloscian = Math.round(2 * (aP * bP + aP * cP + bP * cP) * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Objętość prostopadłościanu:</span>
+                                <strong>${objetoscProstopadloscian}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Pole powierzchni:</span>
+                                <strong>${polePowierzchniProstopadloscian}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Prostopadłościan: a=${aP}, b=${bP}, c=${cP}, objętość=${objetoscProstopadloscian}, pole powierzchni=${polePowierzchniProstopadloscian}`;
+                        break;
+                        
+                    case 'walec':
+                        const rW = parseFloat(document.getElementById('r').value);
+                        const hW = parseFloat(document.getElementById('h').value);
+                        if (rW <= 0 || hW <= 0) throw new Error('Promień i wysokość muszą być większe od zera');
+                        
+                        const objetoscWalec = Math.round(Math.PI * rW * rW * hW * 100) / 100;
+                        const polePowierzchniWalec = Math.round(2 * Math.PI * rW * (rW + hW) * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Objętość walca:</span>
+                                <strong>${objetoscWalec}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Pole powierzchni:</span>
+                                <strong>${polePowierzchniWalec}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Walec: r=${rW}, h=${hW}, objętość=${objetoscWalec}, pole powierzchni=${polePowierzchniWalec}`;
+                        break;
+                        
+                    case 'kula':
+                        const rK = parseFloat(document.getElementById('r').value);
+                        if (rK <= 0) throw new Error('Promień musi być większy od zera');
+                        
+                        const objetoscKula = Math.round((4/3) * Math.PI * rK * rK * rK * 100) / 100;
+                        const polePowierzchniKula = Math.round(4 * Math.PI * rK * rK * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Objętość kuli:</span>
+                                <strong>${objetoscKula}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Pole powierzchni:</span>
+                                <strong>${polePowierzchniKula}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Kula: r=${rK}, objętość=${objetoscKula}, pole powierzchni=${polePowierzchniKula}`;
+                        break;
+                        
+                    case 'stozek':
+                        const rS = parseFloat(document.getElementById('r').value);
+                        const hS = parseFloat(document.getElementById('h').value);
+                        if (rS <= 0 || hS <= 0) throw new Error('Promień i wysokość muszą być większe od zera');
+                        
+                        const objetoscStozek = Math.round((1/3) * Math.PI * rS * rS * hS * 100) / 100;
+                        const tworząca = Math.round(Math.sqrt(rS * rS + hS * hS) * 100) / 100;
+                        const polePowierzchniStozek = Math.round(Math.PI * rS * (rS + tworząca) * 100) / 100;
+                        
+                        resultsHTML = `
+                            <div class="result-item">
+                                <span>Objętość stożka:</span>
+                                <strong>${objetoscStozek}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Pole powierzchni:</span>
+                                <strong>${polePowierzchniStozek}</strong>
+                            </div>
+                            <div class="result-item">
+                                <span>Tworząca:</span>
+                                <strong>${tworząca}</strong>
+                            </div>
+                        `;
+                        historyEntry = `Stożek: r=${rS}, h=${hS}, objętość=${objetoscStozek}, pole powierzchni=${polePowierzchniStozek}`;
+                        break;
+                }
+                
+                results.innerHTML = resultsHTML;
+                results.classList.remove('hidden');
+                addToHistory(historyEntry);
+                
+            } catch (error) {
+                results.innerHTML = `<div class="result-item" style="color: red;"><span>Błąd:</span><strong>${error.message}</strong></div>`;
+                results.classList.remove('hidden');
+            }
+        }
+
+        function addToHistory(entry) {
+            historia.unshift(entry);
+            if (historia.length > 50) {
+                historia = historia.slice(0, 50);
+            }
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const recentHistory = document.getElementById('recent-history');
+            const fullHistory = document.getElementById('full-history');
+            
+            // Recent history (last 3)
+            const recent = historia.slice(0, 3);
+            if (recent.length === 0) {
+                recentHistory.innerHTML = '<p style="color: #666; font-size: 0.9rem;">Brak obliczeń</p>';
+            } else {
+                recentHistory.innerHTML = recent.map(entry => 
+                    `<div class="history-item">${entry}</div>`
+                ).join('');
+            }
+            
+            // Full history
+            if (historia.length === 0) {
+                fullHistory.innerHTML = '<p>Brak historii obliczeń.</p>';
+            } else {
+                fullHistory.innerHTML = historia.map((entry, index) => 
+                    `<div class="history-item">${index + 1}. ${entry}</div>`
+                ).join('');
+            }
+        }
+
+        function clearHistory() {
+            historia = [];
+            updateHistoryDisplay();
+        }
+
+        function selectRombMethod(method) {
+            const method1Btn = document.getElementById('method1');
+            const method2Btn = document.getElementById('method2');
+            const inputs1 = document.getElementById('romb-inputs1');
+            const inputs2 = document.getElementById('romb-inputs2');
+            
+            if (method === 1) {
+                // Przez przekątne
+                method1Btn.style.background = '#4facfe';
+                method1Btn.style.color = 'white';
+                method2Btn.style.background = 'white';
+                method2Btn.style.color = '#4facfe';
+                inputs1.classList.remove('hidden');
+                inputs2.classList.add('hidden');
+            } else {
+                // Przez bok i wysokość
+                method2Btn.style.background = '#4facfe';
+                method2Btn.style.color = 'white';
+                method1Btn.style.background = 'white';
+                method1Btn.style.color = '#4facfe';
+                inputs2.classList.remove('hidden');
+                inputs1.classList.add('hidden');
+            }
+        }
+
+        // Initialize
+        updateHistoryDisplay();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'984058d614b3d7f7',t:'MTc1ODY5NjYyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,0 +1,150 @@
+<!-- 
+
+
+## 📂 Plik 1: `base_app.py` (Fundament i Zasady)
+
+Ten plik to czysta definicja architektoniczna. Nie ma tu logiki biznesowej, są tylko reguły dla innych gier.
+
+* **Sekcja importów:** Na samej górze pliku importujesz z wbudowanego pakietu `abc` dwa elementy: klasę `ABC` (klasa bazowa dla abstrakcji) oraz dekorator `abstractmethod`.
+* **Definicja klasy:** Tworzysz klasę `BaseApp`, która w nawiasie dziedziczy po `ABC`. To mówi Pythonowi: *„Tej klasy nie można stworzyć bezpośrednio, służy ona tylko jako wzorzec”*.
+* **Konstruktor (`__init__`):** * Przyjmuje parametry: `name` (tekst) oraz `ram_required` (liczba całkowita).
+* Wewnątrz przypisujesz je do pól prywatnych z dwoma podkreśleniami: `self.__name = name` oraz `self.__ram_required = ram_required`. To jest **hermetyzacja**. Dzięki temu żadna minigra nie będzie mogła „oszukać” systemu i zmienić swojej nazwy lub wymagań RAM w trakcie działania.
+* Tworzysz publiczne pole logiczne `self.is_running = False`. Będzie ono kontrolować pętlę wewnątrz minigry.
+
+
+* **Sekcja Getterów (`@property`):**
+* Tworzysz metodę `def name(self)` z dekoratorem `@property`, która zwraca `self.__name`.
+* Tworzysz metodę `def ram_required(self)` z dekoratorem `@property`, która zwraca `self.__ram_required`.
+* *Po co?* Dzięki temu główny system (`main.py`) może wywołać `print(gra.name)`, ale próba zrobienia `gra.name = "Inna Nazwa"` wyrzuci błąd.
+
+
+* **Metody Abstrakcyjne:**
+* Piszesz trzy metody: `def start(self)`, `def update(self)` oraz `def render(self)`.
+* Nad każdą z nich dajesz dekorator `@abstractmethod`.
+* Wewnątrz każdej z nich wpisujesz tylko słowo kluczowe `pass`. To są puste szablony. Każda gra w przyszłości *musi* je u siebie napisać, inaczej program się nie uruchomi.
+
+
+
+---
+
+## 📂 Plik 2: `hardware.py` (Symulator Sprzętu komputera)
+
+Ten plik odpowiada za to, aby gra miała fizyczne ramy działania. To tutaj realizujesz punktowaną **kompozycję**.
+
+* **Klasa `RAM`:**
+* **Konstruktor:** Przyjmuje `total_capacity` (np. 1024). Tworzy dwa pola: `self.total = total_capacity` oraz `self.used = 0`.
+* **Metoda `allocate(self, amount: int) -> bool`:** Logika sprawdzania pamięci. Jeśli `self.used + amount <= self.total`, to dodajesz `amount` do `self.used` i zwracasz `True` (pamięć przydzielona). W przeciwnym wypadku zwracasz `False` (brak pamięci).
+* **Metoda `free(self, amount: int) -> None`:** Odejmuje `amount` od `self.used`. Dodaj zabezpieczenie: `self.used = max(0, self.used - amount)`, żeby używany RAM nigdy nie spadł poniżej zera.
+
+
+* **Klasa `CPU`:**
+* **Konstruktor:** Przyjmuje `model` (str) i `base_clock` (float). Tworzy pola dla modelu, taktowania oraz pole `self.temperature = 40.0` (początkowa temperatura procesora w stopniach Celsjusza).
+
+
+* **Klasa `VirtualMachine` (Główny komputer):**
+* **Konstruktor:** Przyjmuje `cpu_model`, `cpu_clock` oraz `ram_capacity`.
+* **LOGIKA KOMPOZYCJI:** Wewnątrz konstruktora tworzysz obiekty wyższych klas: `self.ram = RAM(ram_capacity)` oraz `self.cpu = CPU(cpu_model, cpu_clock)`. Komputer nie dziedziczy po RAM-ie ani CPU. On **ma** RAM i CPU jako swoje części składowe.
+* Dodajesz pole `self.power_status = False`.
+* **Metoda `get_system_status(self) -> str`:** Funkcja, która pobiera dane z obiektów składowych i buduje z nich długi, czytelny ciąg tekstowy, np. `"[SYSTEM STATUS] Procesor: Intel vPro @ 4.2GHz (40°C) | RAM: 256MB / 1024MB"`. Ten ciąg będzie odświeżany w menu głównym.
+
+
+
+---
+
+## 📂 Plik 3: `system_uzytkownikow.py` (Zarządzanie kontami i logami)
+
+Plik odpowiedzialny za warstwę bezpieczeństwa, profile oraz gromadzenie historii działań.
+
+* **Klasa `SystemLogger`:**
+* **Konstruktor:** Inicjalizuje **pustą listę**: `self.history: list[str] = []`.
+* **Metoda `log_event(self, message: str) -> None`:** Używa biblioteki `datetime`, aby pobrać aktualną godzinę i minuty. Formatuje tekst, np. `"[14:35:10] URUCHOMIONO: Gra logiczna"`, i za pomocą metody `self.history.append()` dorzuca ten wpis na koniec listy.
+* **Metoda `print_all_logs(self) -> None`:** Służy do prezentacji przed prowadzącym. Czyści wirtualnie ekran (drukuje puste linie), a następnie za pomocą **pętli `for**` przechodzi przez każdy element listy `self.history` i wyświetla go w konsoli.
+
+
+* **Klasa `Profile` (Klasa bazowa dla kont):**
+* **Konstruktor:** Przyjmuje `username` i `password`. Zapisuje je w polach obiektu. Tworzy też listę `self.allowed_apps = ["kalkulator"]`.
+
+
+* **Klasa `AdminProfile` (Klasa pochodna – DZIEDZICZENIE):**
+* Dziedziczy po `Profile`: `class AdminProfile(Profile):`.
+* **Konstruktor:** Przyjmuje te same parametry, ale na samym początku wywołuje `super().__init__(username, password)`. Dzięki temu automatycznie zyskujesz mechanizm logowania z klasy wyżej.
+* Dodatkowo ustawiasz pole `self.account_type = "ROOT"`.
+* Do listy `self.allowed_apps` dopisujesz zaawansowane gry: `self.allowed_apps.extend(["codebreaker", "crawler"])`. Prowadzącemu tłumaczysz: *"Klasa AdminProfile dziedziczy strukturę logowania, ale rozszerza listę dostępnych aplikacji i nadaje wyższy priorytet dostępu"*.
+
+
+
+---
+
+## 📂 Plik 4: `apps_package.py` (Serce projektu – Zawartość gier)
+
+Tutaj tworzysz fizyczne aplikacje. Każda z nich musi mieć dokładnie takie same metody (`start`, `update`, `render`), ponieważ dziedziczą po `BaseApp`.
+
+* **Klasa `CodeBreakerGame(BaseApp)`:**
+* **Konstruktor:** Wywołuje `super().__init__("Szyfrator Sieciowy v1.0", 256)`.
+* **Metoda `start()`:** Ustawia `self.is_running = True`, generuje losową liczbę (kod) za pomocą `random.randint(100, 999)` i ustawia liczbowy licznik prób na `5`.
+* **Metoda `render()`:** Wyświetla graficzny interfejs tekstowy. Rysuje ramki z gwiazdek, pokazuje aktualną liczbę pozostałych prób i zachęca do podania kodu.
+* **Metoda `update()`:** Pobiera dane przez `input()`. Całość zamykasz w bloku `try...except ValueError`. Jeśli użytkownik wpisze litery, przechwytujesz błąd, wyświetlasz komunikat *„Błąd: Podaj cyfry!”* i nie zabierasz próby. Jeśli wpisze poprawną liczbę, sprawdzasz warunkiem `if/elif/else`: czy za duża (komunikat: *„Sygnał za wysoki”*), czy za mała (*„Sygnał za niski”*), czy trafiona. Jeśli trafiona lub próby spadną do 0 – ustawiasz `self.is_running = False`, co kończy tę minigrę.
+
+
+* **Klasa `NetCrawlerRPG(BaseApp)`:**
+* Druga gra, zbudowana analogicznie. Symuluje poruszanie się po lochu sieciowym.
+* **Pola obiektu:** `self.player_hp = 100`, `self.current_layer = 1`, `self.enemy_hp = 0`.
+* **Metoda `start()`:** Wita gracza w cyfrowym labiryncie i resetuje jego statystyki.
+* **Metoda `render()`:** Rysuje stan zdrowia gracza w postaci paska, np. `[HP: **********]`, oraz statystyki przeciwnika (Zapory sieciowej).
+* **Metoda `update()`:** Wyświetla menu akcji: `1. Wyślij pakiet atakujący`, `2. Uruchom skrypt naprawczy`, `3. Uciekaj`. Jeśli gracz wybierze atak, program losuje obrażenia dla wroga i dla gracza. Jeśli gracz wybierze naprawę, losowo przywraca mu zdrowie. Po pokonaniu wroga poziom sieci (`self.current_layer`) rośnie o 1, a statystyki kolejnego przeciwnika są losowane z wyższymi wartościami. Gra kończy się, gdy punkty życia gracza spadną do zera.
+
+
+
+---
+
+## 📂 Plik 5: `main.py` (Mózg i Koordynator Systemu)
+
+Ten plik uruchamia cały mechanizm i zarządza interakcją z użytkownikiem. Tutaj implementujesz **główną pętli `while**`.
+
+* **Funkcja główna `def main():`:**
+* Tworzysz obiekt komputera: `machine = VirtualMachine("Ryzen 9", 4.0, 1024)`.
+* Tworzysz obiekt loggera: `logger = SystemLogger()`.
+* Tworzysz konto administratora: `current_user = AdminProfile("Root_Hacker", "admin123")`.
+* Tworzysz bazę (słownik) gier: `system_apps = {"codebreaker": CodeBreakerGame(), "crawler": NetCrawlerRPG()}`.
+* Włączasz komputer: `machine.power_status = True` i logujesz zdarzenie: `logger.log_event("Włączono system operacyjny RetroOS.")`.
+
+
+* **Główna Pętla Środowiska (`while machine.power_status == True`):**
+* **Krok 1:** Czyścisz wirtualnie ekran (metodą drukującą puste linie).
+* **Krok 2:** Wywołujesz `print(machine.get_system_status())`, dzięki czemu na samej górze ekranu zawsze widać parametry wirtualnego sprzętu.
+* **Krok 3:** Wyświetlasz opcje głównego menu: `[apps] - lista gier`, `[run NAZWA] - uruchom grę`, `[logs] - pokaż historię`, `[shutdown] - wyłącz komputer`.
+* **Krok 4:** Pobierasz komendę tekstową od użytkownika.
+* **Krok 5 (Logika obsługi komend):**
+* Jeśli komenda to `apps`: Program przechodzi przez słownik `system_apps` i wyświetla nazwy gier oraz ich wymagania RAM.
+* Jeśli komenda to `logs`: Program wywołuje metodę `logger.print_all_logs()`, a po jej zakończeniu czeka na wciśnięcie klawisza Enter, by gracz mógł przeczytać historię.
+* **Krok 6 (Kluczowy – Uruchamianie gry w grze):** Jeśli użytkownik wpisze np. `run codebreaker`:
+1. Program wyciąga obiekt gry ze słownika.
+2. Wywołuje metodę `machine.ram.allocate(gra.ram_required)`.
+3. Jeśli alokacja zwróciła `True`, logujesz zdarzenie w loggerze i uruchamiasz grę: `gra.start()`.
+4. **URUCHAMIASZ WEWNĘTRZNĄ PĘTLĘ**:
+```python
+while gra.is_running:
+    gra.render()
+    gra.update()
+
+```
+
+
+*W tym momencie główna pętla systemu czeka. Działa pętla gry.*
+5. Gdy gra zmieni swój stan `is_running` na `False`, wewnętrzna pętla się kończy.
+6. Program wywołuje `machine.ram.free(gra.ram_required)`, loguje zamknięcie aplikacji i wraca do wyświetlania głównego menu systemu.
+
+
+* Jeśli komenda to `shutdown`: Zmieniasz `machine.power_status = False`. Pętla główna się kończy, program wyświetla komunikat pożegnalny i bezpiecznie kończy działanie.
+
+
+
+
+
+---
+
+## 💡 Podsumowanie przed kodowaniem
+
+Mając tak drobiazgowy opis, Twoim zadaniem jest po prostu otworzyć edytor kodu i zacząć przekładać te słowne instrukcje na język Python.
+
+Dzięki temu, że każda akcja (taka jak alokacja RAM-u, logowanie zdarzeń, sprawdzanie błędów przy wpisywaniu liczb czy rysowanie ramek interfejsu) jest wydzielona do osobnej, dedykowanej metody, Twój kod zachowa idealną strukturę. Spełni to z nawiązką kryterium **czytelności i sensownego nazewnictwa**, a liczba linii bardzo szybko i naturalnie przekroczy wymagany próg **1100 linijek**. -->

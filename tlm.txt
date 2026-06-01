@@ -1,0 +1,50 @@
+Krótko: to konsolowy „RetroOS” — prosty emulator systemu z wirtualną maszyną, kontem administratora i zestawem aplikacji (gry, quizy, laby). Poniżej szybkie, czytelne wyjaśnienie struktury i działania.
+
+**Architektura ogólna**
+- **Główny plik:** main.py — uruchamia system, inicjalizuje VM, loggera i użytkownika, trzyma rejestr dostępnych aplikacji (`system_apps`) i obsługuje pętlę CLI.
+- **Interfejs aplikacji:** `BaseApp` (w base_app.py) — każda aplikacja implementuje `start()`, `render()`, `update()` i używa flagi `is_running`.
+- **Aplikacje:** zgrupowane m.in. w apps_package.py, apps_extended.py, games_advanced.py. Dodatkowe moduły (np. among_us_full.py) zawierają rozbudowane gry.
+- **Sprzęt / użytkownicy:** hardware.py modeluje `VirtualMachine` z RAM; system_uzytkownikow.py zawiera `AdminProfile` i `SystemLogger`.
+- **Quizy:** logika pytań i quizów w quiz_system.py.
+
+**Jak działa pętla główna (main.py)**
+- Inicjalizacja VM, loggera i `current_user`.
+- Tworzenie słownika `system_apps` mapującego krótkie nazwy (np. `"codebreaker"`) na obiekty aplikacji.
+- Główne polecenia CLI:
+  - `apps` — lista aplikacji,
+  - `run <nazwa>` — uruchom aplikację,
+  - `logs` — pokaż logi,
+  - `whoami` — informacje o użytkowniku,
+  - `shutdown` — zakończ system.
+- Przy uruchamianiu aplikacji wywoływana jest funkcja `run_application(...)`, która:
+  - sprawdza uprawnienia (`current_user.has_access_to_app`),
+  - próbuje alokować wymagany RAM (`machine.ram.allocate(app.ram_required)`),
+  - jeśli alokacja OK, woła `app.start()` i w pętli wywołuje `app.render()` + `app.update()` dopóki `app.is_running` = True,
+  - po zamknięciu zwalnia RAM i loguje zdarzenia.
+
+**Jak działają aplikacje**
+- Każda aplikacja implementuje trzy etapy:
+  - `start()` — inicjalizacja i ustawienie `is_running = True`,
+  - `render()` — wypisanie interfejsu/ekranu,
+  - `update()` — czytanie wejścia i aktualizacja stanu; może ustawić `is_running = False`, by zakończyć.
+- Aplikacje deklarują `ram_required` (ile RAM muszą zarezerwować przed startem).
+
+**Zależności i bezpieczeństwo**
+- `VirtualMachine` symuluje zasoby — jeśli brak RAM, `run_application` blokuje uruchomienie i loguje błąd.
+- `AdminProfile` i `SystemLogger` kontrolują dostęp i zapis zdarzeń; adminowi przypisujesz listę `allowed_apps`.
+
+**Gdzie edytować / rozszerzać**
+- Dodać nową aplikację: utwórz klasę dziedziczącą `BaseApp` (np. w nowym pliku), zaimportuj i zarejestruj w `system_apps` w main.py.
+- Zmienić zasoby VM: edytuj hardware.py.
+- Dodać pytania/quizy: edytuj quiz_system.py lub apps_extended.py.
+
+Jak uruchomić lokalnie:
+```bash
+python main.py
+```
+Po uruchomieniu użyj poleceń z menu (`apps`, `run <nazwa>`, `logs`, `whoami`, `shutdown`).
+
+Chcesz, żebym:
+- przeprowadził szybkie demo (nacisnę Enter i przejdę przez menu),  
+- czy przygotował diagram zależności plików,  
+- czy wypisał dokładnie, które pliki implementują które aplikacje?
